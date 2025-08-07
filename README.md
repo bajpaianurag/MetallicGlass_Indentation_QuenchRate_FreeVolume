@@ -21,7 +21,7 @@ scripts/
     └── analysis/                     # Python scripts for post-processing
 
 data/
-    └── compositions.xlsx                # Alloy compositions
+    └── compositions.xlsx             # Alloy compositions
 
 requirements.txt                   # Python dependencies
 README.md                          # This file
