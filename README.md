@@ -16,6 +16,7 @@ We investigate how quench rate and compositional complexity influence free volum
 ```
 scripts/
     ├── generate_structure.py         # Generate initial structures using ASE
+    ├── initial_structures/           # Initial FCC structures for the alloys prior to quenching
     ├── quench_protocols/             # LAMMPS input files for quenching
     ├── indentation/                  # LAMMPS input files for nanoindentation
     └── analysis/                     # Python scripts for post-processing
