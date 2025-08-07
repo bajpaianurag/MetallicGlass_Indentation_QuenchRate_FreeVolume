@@ -21,10 +21,7 @@ scripts/
     └── analysis/                     # Python scripts for post-processing
 
 data/
-    └── sample_dumps/                 # Example LAMMPS dump files
-
-figures/
-    └── example_outputs/              # Load–depth curves, strain maps, etc.
+    └── compositions.xlsx                # Alloy compositions
 
 requirements.txt                   # Python dependencies
 README.md                          # This file
