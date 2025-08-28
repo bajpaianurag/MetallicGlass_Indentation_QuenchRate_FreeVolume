@@ -150,33 +150,11 @@ python scripts/build_structures_50k.py \
 
 ---
 
-## Reproducing the Figures
-
-**Main**
-- **Fig. 1 (Structure)** — RDFs, g₁, g_min, S₂: `analysis/sro_voronoi_stats.py` + `notebooks/Fig1_RDF_SRO.ipynb`
-- **Fig. 2 (Free volume)** — Histograms + FVHI vs rate + QRSI–CCI: `analysis/free_volume_metrics.py`
-- **Fig. 3 (Mechanics)** — P–h + pop-ins; H, E vs rate; ER & serration density: `analysis/load_depth_OP_serrations.py`
-- **Fig. 4 (D²min/STZ)** — 2×3 maps + STZ density & plastic-zone volume: `matlab/plot_D2min_three_alloys.m` and/or `analysis/d2min_stz_cluster.py`
-- **Fig. 5 (Correlations)** — FVHI ↔ H/E/STZ/Δf_ico: `notebooks/Fig5_Correlations.ipynb`
-
-**Supplementary**
-- SF1–SF8: same scripts with different flags; see `figures/README_figures.md` if provided.
-
----
-
 ## Units & Conventions
 
 - **LAMMPS units:** `metal` (Å, ps, eV)  
 - Forces → N (SI) if needed; report **H, E** in **GPa**
 - Contact area: spherical geometry; Oliver–Pharr stiffness from eV/Å² converted to SI
-
----
-
-## Troubleshooting
-
-- **Only blue in FV maps:** data are normalized (−1→1). Use `plotMode='raw'` or convert to Å³; for diverging, plot z-score or ΔV_free.
-- **Sparse D²min slices:** increase `sliceFrac` (0.2→0.4) or reduce grid; use nearest fill.
-- **Indentation instability:** enlarge cell laterally (≥ 4× depth); thermostat only outer shell; use NVE under tip.
 
 ---
 
@@ -188,21 +166,8 @@ python scripts/build_structures_50k.py \
 
 ---
 
-## Citation
-
-> *Compositional complexity suppresses quench-rate sensitivity and stabilizes nanoindentation response in Cu–Zr–based metallic glasses.*  
-> Anurag Bajpai†, Jaemin Wang†, Dierk Raabe* († equal contribution; *corresponding)
-
----
-
-## License
-
-Add a license file (e.g., MIT or BSD-3-Clause).
-
----
-
 ## Contact
 
-- **Maintainers:** Anurag Bajpai, Jaemin Wang  
+- **Maintainers:** Anurag Bajpai (a.bajpai@mpie.de), Jaemin Wang (j.wang@mpie.de) 
 - **Supervision:** Dierk Raabe  
 - Open a GitHub Issue with environment, command, and log snippet for support.
