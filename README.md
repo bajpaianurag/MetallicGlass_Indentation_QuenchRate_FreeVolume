@@ -9,7 +9,7 @@ We quantify structure and mechanics via:
 - **Free volume** (radical Voronoi; FVHI, QRSI)
 - **Short-range order** (icosahedral polyhedra)
 - **Instrumented nanoindentation** (H, E, ER; serration density)
-- **Non-affine displacement** (D²min) and **STZ clustering**
+- **Non-affine displacement** (D^{2}_{min}) and **STZ clustering**
 - **Compositional complexity** (CCI)
 
 ---
