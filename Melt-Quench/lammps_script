@@ -1,0 +1,105 @@
+# Author: Jaemin Wang and Anurag Bajpai (MPI-SusMat)  
+# Email: j.wang@mpi-susmat.de, a.bajpai@mpi-susmat.de
+
+units            metal
+boundary         p p p
+atom_style       atomic
+atom_modify      sort 0 0
+neighbor         0.3 bin
+
+# --- Define simulation box and lattice ---
+lattice fcc 3.7
+region mybox block 0 25 0 25 0 25   # Simulation cell
+create_box 4 mybox                  # 4 atom types: Al, Zr, Ti, Cu
+
+# --- Create initial atoms and assign types (alloy composition) ---
+create_atoms 1 box
+set type 1 type/subset 2 28125 88099  # Replace subset with Zr
+set type 1 type/subset 3 3125  88099  # Replace subset with Ti
+set type 1 type/subset 4 28125 88099  # Replace subset with Cu
+
+# --- Define atomic masses ---
+mass 1 26.982  # Al
+mass 2 91.224  # Zr
+mass 3 47.88   # Ti
+mass 4 63.546  # Cu
+
+# --- Interatomic potential (MEAM) ---
+pair_style       meam
+pair_coeff       * * library.meam Al Zr Ti Cu pot.meam Al Zr Ti Cu
+
+# --- Output and timestep control ---
+thermo          10000
+thermo_style    custom step temp etotal pe enthalpy epair vol lx ly lz
+thermo_modify   norm yes
+timestep        0.001
+neigh_modify    every 20 delay 0 check yes
+
+# --- Output configuration dumps for visualization ---
+shell           "rm -r CFG"
+shell           mkdir CFG
+dump            d1 all cfg 250000 CFG/test_*.cfg mass type xs ys zs
+dump_modify     d1 element Al Zr Ti Cu sort id pad 5
+
+# =====================================================
+# 1. Heating stage: ramp from 50 K → 2500 K (melting)
+# =====================================================
+fix             f1 all npt temp 50 2500 1 iso 0 0 5 
+
+variable        end equal ($(step)+250000)
+variable        inter equal (250000)/10
+variable        start_step equal $(step)
+label           lab1
+
+run             ${inter} start ${start_step} stop ${end} post no
+write_restart   restart.melt
+if              "$(step)<${end}" then "jump lammps_script lab1"
+unfix           f1
+
+# =====================================================
+# 2. Hold at high temperature: 2500 K equilibration
+# =====================================================
+fix             f1 all npt temp 2500 2500 1 iso 0 0 5
+
+variable        end equal ($(step)+250000)
+variable        inter equal (250000)/10
+variable        start_step equal $(step)
+label           lab12
+
+run             ${inter} start ${start_step} stop ${end} post no
+write_restart   restart.equilib
+if              "$(step)<${end}" then "jump lammps_script lab12"
+unfix           f1
+
+# =====================================================
+# 3. Quenching stage: cool down 2500 K → 300 K
+# =====================================================
+fix             f2 all npt temp 2500 300 1 iso 0 0 5
+
+variable        end equal ($(step)+22000000)
+variable        quench_inter equal 2200000
+variable        start_step equal $(step)
+label           lab2
+
+run             ${quench_inter} start ${start_step} stop ${end} post no
+write_restart   restart.quench
+if              "$(step)<${end}" then "jump lammps_script lab2"
+unfix           f2
+
+# =====================================================
+# 4. Final equilibration at 300 K
+# =====================================================
+fix             f3 all npt temp 300 300 1 iso 0 0 5
+
+variable        end equal ($(step)+250000)
+variable        inter equal (250000)/10
+variable        start_step equal $(step)
+label           lab3
+
+run             ${inter} start ${start_step} stop ${end} post no
+write_restart   restart.equilib2
+if              "$(step)<${end}" then "jump lammps_script lab3"
+unfix           f3
+
+# --- Final dump for structure analysis ---
+write_dump      all xyz sys_0GPa.xyz modify sort id element Al Zr Ti Cu

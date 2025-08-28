@@ -1,0 +1,8 @@
+clear
+read_restart ../restart.equilib2   # Load the equilibrated structure from previous run
+
+# --- Define element labels for clean output ---
+variable        elems string "Al Zr Ti Cu"
+
+# --- Write final configuration in CFG format for visualization/analysis ---
+write_dump all cfg final.cfg mass type xs ys zs modify element ${elems} sort id pad 5

@@ -1,0 +1,133 @@
+# Author: Jaemin Wang and Anurag Bajpai (MPI-SusMat)  
+# Email: j.wang@mpi-susmat.de, a.bajpai@mpi-susmat.de
+
+# ---------- System & Potential ----------
+units           metal
+atom_style      atomic
+boundary        p p p 
+read_restart    restart.equilib2      # Start from equilibrated alloy structure
+reset_timestep  0
+
+# Masses and element labels
+mass 1 26.982  # Al
+mass 2 91.224  # Zr
+mass 3 47.88   # Ti
+mass 4 63.546  # Cu
+variable        elems string "Al Zr Ti Cu"
+
+# Interatomic potential (MEAM)
+pair_style       meam
+pair_coeff       * * library.meam ${elems} pot.meam ${elems}
+
+# Initialize velocities to zero (static start)
+velocity all set 0.0 0.0 0.0
+run 0
+
+# ---------- Variables ----------
+# Define indentation parameters
+variable R      equal 30.0                      # Indenter radius (Å)
+variable dmax   equal 20.0                      # Maximum indentation depth (Å)
+variable vel    equal 0.1                       # Indenter velocity (Å/ps ~ 10 m/s)
+
+# Indenter coordinates (centered in x,y, moving along z)
+variable x0     equal (xhi-xlo)/2+xlo
+variable y0     equal (yhi-ylo)/2+ylo
+
+# Extend box in z to leave space for indenter movement
+variable new_zhi equal zhi+v_R*2+10.0
+change_box all z final $(zlo) ${new_zhi} units box
+
+# Initial and time-dependent z-positions for indenter
+variable z0     equal "zhi-(v_R+10.0)"          # Start just above surface
+variable zmove  equal "v_z0 - v_vel*step*dt"   # Position during loading
+variable nstep  equal "v_dmax/v_vel/dt"        # Steps required for max depth
+variable zup    equal "v_z0 - v_vel*v_nstep*dt + v_vel*(step - v_nstep)*dt" # Path for unloading
+
+# ---------- Regions & Groups ----------
+# Fix bottom layer atoms to mimic a substrate
+variable bot_low  equal zlo
+variable bot_high equal zlo+10.0
+
+region bottom block INF INF INF INF ${bot_low} ${bot_high} units box
+group  bottom_atoms region bottom
+group  mobile subtract all bottom_atoms
+
+# ---------- Time Integration & Thermostat ----------
+fix nve_shell all nve                      # NVE integration for all atoms
+fix freeze bottom_atoms setforce 0.0 0.0 0.0   # Keep bottom atoms immobile
+velocity bottom_atoms set 0.0 0.0 0.0
+fix temp_scale mobile temp/rescale 100 0.1 0.1 0.01 1.0   # Simple thermostat
+
+# ---------- Computes (for output) ----------
+compute pe_atom all pe/atom
+compute ke_atom all ke/atom
+compute Zmax mobile reduce max z             # Track surface height during indentation
+
+# ---------- Dumps (structural snapshots) ----------
+shell           "rm -rf CFG"
+shell           mkdir CFG
+dump            d1 all cfg 1000 CFG/indent_*.cfg mass type xs ys zs
+dump_modify     d1 element ${elems} sort id pad 5
+
+# Pre-indentation snapshot
+run 0
+write_dump all custom dump.pre id type x y z c_pe_atom c_ke_atom
+
+# =====================================================
+# LOADING PHASE: move indenter downward into sample
+# =====================================================
+fix indent_load all indent 1000 sphere ${x0} ${y0} v_zmove ${R} units box
+
+thermo 1000
+thermo_style custom step time temp pe ke etotal press lx ly lz v_z0 v_zmove v_nstep
+
+# Variables to record force–depth response
+variable LoadL   equal f_indent_load[3]             # z-force on indenter
+variable DepthL  equal "v_z0 - v_zmove"             # current indentation depth
+variable ZmaxM   equal "c_Zmax"                     # surface movement
+variable Lbox    equal "lz"
+variable EindL   equal "f_indent_load"              # total indentation energy
+
+compute t_all all temp
+
+# Log indentation curve during loading
+fix log_load all ave/time 100 1 100 v_LoadL v_DepthL v_ZmaxM v_Lbox v_EindL c_t_all f_indent_load[1] f_indent_load[2] f_indent_load[3] file indentation_out.load mode scalar
+
+# Dumps for forces and energies
+dump 1 all custom 500 dump.load id type x y z fx fy fz
+dump_modify 1 sort id
+
+dump 2 all custom 500 dump.energy id type x y z c_pe_atom c_ke_atom
+dump_modify 2 sort id
+
+run $(v_nstep)
+
+unfix indent_load
+unfix log_load
+
+# =====================================================
+# UNLOADING PHASE: retract indenter upward
+# =====================================================
+fix indent_unload all indent 1000 sphere ${x0} ${y0} v_zup ${R} units box
+
+thermo 1000
+thermo_style custom step time temp pe ke etotal press lx ly lz v_zup
+
+# Variables for unloading curve
+variable LoadU  equal f_indent_unload[3]
+variable DepthU equal "v_z0 - v_zup"
+variable EindU  equal "f_indent_unload"
+
+# Log indentation curve during unloading
+fix log_unload all ave/time 100 1 100 v_LoadU v_DepthU v_ZmaxM v_Lbox v_EindU c_t_all f_indent_unload[1] f_indent_unload[2] f_indent_unload[3] file indentation_out.unload mode scalar
+
+run $(v_nstep)
+
+unfix indent_unload
+unfix log_unload
+
+# ---------- Final Snapshots ----------
+write_dump all custom dump.post id type x y z c_pe_atom c_ke_atom
+write_data final_data.lmp
+write_dump all custom final_dump.lammpstrj id type x y z c_pe_atom c_ke_atom
+write_dump all cfg final.cfg mass type xs ys zs modify element ${elems} sort id pad 5
