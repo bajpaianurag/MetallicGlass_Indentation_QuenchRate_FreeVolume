@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+title: MD-Based Study of Free Volume and Indentation in Metallic Glasses
+message: If you use this repository, please cite it.
+authors:
+  - family-names: Bajpai
+    given-names: Anurag
+    orcid: https://orcid.org/0000-0003-0456-1641
+version: 1.0.1
+date-released: 2025-08-28
