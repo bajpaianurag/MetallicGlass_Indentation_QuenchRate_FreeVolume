@@ -1,0 +1,9 @@
+numpy
+scipy
+pandas
+matplotlib
+ase
+ovito==3.*
+scikit-image
+openpyxl
+tqdm
