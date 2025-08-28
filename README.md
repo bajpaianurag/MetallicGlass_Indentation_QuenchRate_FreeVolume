@@ -2,7 +2,7 @@
 
 This repository contains all input scripts, analysis tools, and dataset references used in the study:
 
-> **“Compositional Complexity Suppresses Free Volume Sensitivity and Stabilizes Mechanical Response in Metallic Glasses”**
+> **“Compositional complexity reduces free-volume sensitivity and serrated flow in metallic glasses”**
 
 ## Overview
 
