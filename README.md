@@ -2,7 +2,7 @@
 
 This repository contains all input scripts, analysis tools, and dataset references used in the study:
 
-> **“Compositional complexity reduces free-volume sensitivity and serrated flow in metallic glasses”**
+> **“Compositional complexity buffers free-volume sensitivity and serrated flow in metallic glasses”**
 
 ## Overview
 
