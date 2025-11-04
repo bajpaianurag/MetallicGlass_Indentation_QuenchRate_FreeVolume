@@ -91,7 +91,7 @@ pip install ase lammps matplotlib numpy ovito pandas
 - **Melt–quench schedules**: Linear/cycling temperature ramps; NPT/NVT ensembles; quench-rate sweeps spanning 10¹²–10¹⁴ K/s (edit as applicable).
 - **Indentation modeling**: Spherical indenter; depth-controlled or load-controlled indentation; recovery/relaxation steps.
 - **Free volume metrics**: Voronoi indices, atomic Voronoi volumes (or proxies), local packing, and correlations with STZ activation.
-- **Mechanical response**: P–h curves, unloading stiffness, Oliver–Pharr modulus/hardness, serration detection, statistics vs. quench rate.
+- **Mechanical response**: P–h curves, unloading stiffness, Oliver–Pharr and Meyer modulus/hardness, serration detection, statistics vs. quench rate.
 - **Compositional complexity effects**: Compare binary vs. multicomponent glasses; sensitivity of free volume and indentation response.
 
 ## Reproducibility
